@@ -1,6 +1,5 @@
 load("AIBL_fea.RData")
 load("brain_fea.RData")
-load("GSE156984_STG_fea.RData")
 load("go_BP.RData")
 library(BioM2)
 library(mlr3verse)#查看可用学习器mlr_learners
@@ -33,80 +32,6 @@ AIBL_PATH <- BioM2(TrainData = AIBL_beta,
                   cores = 5
    )
 save(AIBL_PATH, file = "AIBL_PATH.RData")
-AIBL_ROC <- BioM2(TrainData = AIBL_beta,
-                   TestData = NULL,
-                   pathlistDB = go_BP,
-                   FeatureAnno = AIBL_fea,
-                   nfolds = 10,
-                   classifier = 'liblinear',
-                   predMode = "probability",
-                   PathwaySizeUp = 200,
-                   PathwaySizeDown = 20,
-                   MinfeatureNum_pathways = 10,
-                   Add_UnMapped = T,
-                   Unmapped_num = 300,
-                   Add_FeartureSelection_Method = "cor",
-                   Inner_CV = T,
-                   inner_folds = 5,
-                   Stage1_FeartureSelection_Method = 'cor',
-                   cutoff = 0,
-                   Stage2_FeartureSelection_Method = "RemoveHighcor",
-                   cutoff2 = 0.9,
-                   classifier2 = NULL,
-                   target = 'predict',
-                   cores = 5
-    )
-save(AIBL_ROC, file = "AIBL_ROC2.RData")
-load("MTG_beta.RData")
-MTG_PATH <- BioM2(TrainData = MTG_beta,
-                  TestData = NULL,
-                  pathlistDB = go_BP,
-                  FeatureAnno = brain_fea,
-                  nfolds = 10,
-                  classifier = 'liblinear',
-                  predMode = "probability",
-                  PathwaySizeUp = 200,
-                  PathwaySizeDown = 20,
-                  MinfeatureNum_pathways = 10,
-                  Add_UnMapped = T,
-                  Unmapped_num = 30,
-                  Add_FeartureSelection_Method = "cor",
-                  Inner_CV = T,
-                  inner_folds = 5,
-                  Stage1_FeartureSelection_Method = 'cor',
-                  cutoff = 0,
-                  Stage2_FeartureSelection_Method = "cor",
-                  cutoff2 = 0,
-                  classifier2 = NULL,
-                  target = 'pathways',
-                  p.adjust.method = "fdr",
-                  cores = 10
-   )
-save(MTG_PATH, file = "MTG_PATH.RData")
-MTG_ROC <- BioM2(TrainData = MTG_beta,
-                   TestData = NULL,
-                   pathlistDB = go_BP,
-                   FeatureAnno = brain_fea,
-                   nfolds = 10,
-                   classifier = 'liblinear',
-                   predMode = "probability",
-                   PathwaySizeUp = 200,
-                   PathwaySizeDown = 20,
-                   MinfeatureNum_pathways = 10,
-                   Add_UnMapped = T,
-                   Unmapped_num = 300,
-                   Add_FeartureSelection_Method = "cor",
-                   Inner_CV = T,
-                   inner_folds = 5,
-                   Stage1_FeartureSelection_Method = 'cor',
-                   cutoff = 0,
-                   Stage2_FeartureSelection_Method = "RemoveHighcor",
-                   cutoff2 = 0.9,
-                   classifier2 = NULL,
-                   target = 'predict',
-                   cores = 10
-    )
-save(MTG_ROC, file = "MTG_ROC.RData")
 load("froCortex_beta.RData")
 froCortex_PATH <- BioM2(TrainData = froCortex_beta,
                    TestData = NULL,
@@ -133,31 +58,6 @@ froCortex_PATH <- BioM2(TrainData = froCortex_beta,
                    cores = 10
     )
 save(froCortex_PATH, file = "froCortex_PATH2.RData")
-froCortex_ROC <- BioM2(TrainData = froCortex_beta,
-                  TestData = NULL,
-                  pathlistDB = go_BP,
-                  FeatureAnno = brain_fea,
-                  nfolds = 5,
-                  classifier = 'liblinear',
-                  predMode = "probability",
-                  PathwaySizeUp = 200,
-                  PathwaySizeDown = 20,
-                  MinfeatureNum_pathways = 10,
-                  Add_UnMapped = T,
-                  Unmapped_num = 300,
-                  Add_FeartureSelection_Method = "cor",
-                  Inner_CV = T,
-                  inner_folds = 3,
-                  Stage1_FeartureSelection_Method = 'cor',
-                  cutoff = 0,
-                  Stage2_FeartureSelection_Method = "RemoveHighcor",
-                  cutoff2 = 0.9,
-                  classifier2 = 'liblinear',
-                  target = 'predict',
-                  cores = 10
-   )
-save(froCortex_ROC, file = "froCortex_ROC.RData")
-rm(froCortex_PATH,froCortex_ROC)
 load("Neuron_beta.RData")
 Neuron_PATH <- BioM2(TrainData = Neuron_beta,
                   TestData = NULL,
@@ -184,31 +84,6 @@ Neuron_PATH <- BioM2(TrainData = Neuron_beta,
                   cores = 10
    )
 save(Neuron_PATH, file = "Neuron_PATH.RData")
-Neuron_ROC <- BioM2(TrainData = Neuron_beta,
-                  TestData = NULL,
-                  pathlistDB = go_BP,
-                  FeatureAnno = brain_fea,
-                  nfolds = 5,
-                  classifier = 'liblinear',
-                  predMode = "probability",
-                  PathwaySizeUp = 200,
-                  PathwaySizeDown = 20,
-                  MinfeatureNum_pathways = 10,
-                  Add_UnMapped = T,
-                  Unmapped_num = 200,
-                  Add_FeartureSelection_Method = "cor",
-                  Inner_CV = T,
-                  inner_folds = 2,
-                  Stage1_FeartureSelection_Method = 'cor',
-                  cutoff = 0,
-                  Stage2_FeartureSelection_Method = "RemoveHighcor",
-                  cutoff2 = 0.9,
-                  classifier2 = 'liblinear',
-                  target = 'predict',
-                  cores = 10
-   )
-save(Neuron_ROC, file = "Neuron_ROC.RData")
-rm(Neuron_PATH,Neuron_ROC)
 load("Glia_beta.RData")
 Glia_PATH <- BioM2(TrainData = Glia_beta,
                   TestData = NULL,
@@ -235,77 +110,27 @@ Glia_PATH <- BioM2(TrainData = Glia_beta,
                   cores = 10
    )
 save(Glia_PATH, file = "Glia_PATH.RData")
-Glia_ROC <- BioM2(TrainData = Glia_beta,
+ADNI_ROC <- BioM2(TrainData = ADNI_beta,
                   TestData = NULL,
                   pathlistDB = go_BP,
-                  FeatureAnno = brain_fea,
-                  nfolds = 5,
+                  FeatureAnno = ADNI_fea,
+                  nfolds = 10,
                   classifier = 'liblinear',
                   predMode = "probability",
                   PathwaySizeUp = 200,
                   PathwaySizeDown = 20,
                   MinfeatureNum_pathways = 10,
                   Add_UnMapped = T,
-                  Unmapped_num = 200,
+                  Unmapped_num = 100,
                   Add_FeartureSelection_Method = "cor",
                   Inner_CV = T,
-                  inner_folds = 2,
+                  inner_folds = 5,
                   Stage1_FeartureSelection_Method = 'cor',
                   cutoff = 0,
                   Stage2_FeartureSelection_Method = "RemoveHighcor",
                   cutoff2 = 0.9,
-                  classifier2 = 'liblinear',
+                  classifier2 = NULL,
                   target = 'predict',
                   cores = 10
-   )
-save(Glia_ROC, file = "Glia_ROC.RData")
-load("GSE156984_STG.RData")
-STG_PATH <- BioM2(TrainData = GSE156984_STG,
-                   TestData = NULL,
-                   pathlistDB = go_BP,
-                   FeatureAnno = GSE156984_STG_fea,
-                   nfolds = 5,
-                   classifier = 'liblinear',
-                   predMode = "probability",
-                   PathwaySizeUp = 200,
-                   PathwaySizeDown = 20,
-                   MinfeatureNum_pathways = 10,
-                   Add_UnMapped = T,
-                   Unmapped_num = 30,
-                   Add_FeartureSelection_Method = "cor",
-                   Inner_CV = T,
-                   inner_folds = 3,
-                   Stage1_FeartureSelection_Method = 'cor',
-                   cutoff = 0,
-                   Stage2_FeartureSelection_Method = 'cor',
-                   cutoff2 = 0,
-                   classifier2 = 'liblinear',
-                   target = 'pathways',
-                   p.adjust.method = "fdr",
-                   cores = 10
-    )
-save(STG_PATH, file = "STG_PATH.RData")
-STG_ROC <- BioM2(TrainData = GSE156984_STG,
-                   TestData = NULL,
-                   pathlistDB = go_BP,
-                   FeatureAnno = GSE156984_STG_fea,
-                   nfolds = 5,
-                   classifier = 'liblinear',
-                   predMode = "probability",
-                   PathwaySizeUp = 200,
-                   PathwaySizeDown = 20,
-                   MinfeatureNum_pathways = 10,
-                   Add_UnMapped = T,
-                   Unmapped_num = 300,
-                   Add_FeartureSelection_Method = "cor",
-                   Inner_CV = T,
-                   inner_folds = 3,
-                   Stage1_FeartureSelection_Method = 'cor',
-                   cutoff = 0,
-                   Stage2_FeartureSelection_Method = "RemoveHighcor",
-                   cutoff2 = 0.9,
-                   classifier2 = 'liblinear',
-                   target = 'predict',
-                   cores = 10
-    )
-save(STG_ROC, file = "STG_ROC.RData")
+)
+save(ADNI_ROC, file = "ADNI_ROC.RData")

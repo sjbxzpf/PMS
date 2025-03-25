@@ -2,10 +2,7 @@
 ##一、GSE153712 
 library(meffil)
 options(mc.cores=40) 
-qc.objects1 <- meffil.qc(AIBL_samplesheet, cell.type.reference="blood gse167998", verbose=TRUE)
-qc.objects2 <- meffil.qc(ADNI_samplesheet, cell.type.reference="blood gse167998", verbose=TRUE)
-qc.objects3 <- meffil.qc(GSE208623_samplesheet, cell.type.reference="blood gse167998", verbose=TRUE)
-qc.objects <- c(qc.objects1, qc.objects2,qc.objects3)
+qc.objects <- meffil.qc(AIBL_samplesheet, cell.type.reference="blood gse167998", verbose=TRUE)
 qc.summary <- meffil.qc.summary(qc.objects)
 meffil.qc.report(qc.summary, output.file="qc/report.html")#qc报告
 qc.objects <- meffil.remove.samples(qc.objects, qc.summary$bad.samples$sample.name)
@@ -52,12 +49,12 @@ final_betas <- complete(final_betas, fita)
 library(dplyr)
 library(tibble)
 AIBL_samplesheet <- read.csv("~/zhutianshu/GSE153712/yuanshishuju/AIBL_samplesheet.csv")
+save(AIBL_beta,file="~/zhutianshu/combined/BioM2/AIBL_beta.RData")
 AIBL_beta<- final_betas[rownames(final_betas) %in% AIBL_samplesheet$Sample_Name, ]
 AIBL_beta=as.data.frame(AIBL_beta)%>%
   rownames_to_column(var="Sample_Name")%>%
   merge(AIBL_samplesheet[,c(1,6)],.,by="Sample_Name")%>%
   column_to_rownames(var="Sample_Name")
-save(AIBL_beta,file="~/zhutianshu/combined/BioM2/AIBL_beta.RData")
 #找出对应位点注释文件
 my_featureAnno <- read.csv("~/zhutianshu/combined/zhou_featureAnno.csv")
 select_col <- intersect(colnames(AIBL_beta),my_featureAnno$ID)
@@ -65,37 +62,8 @@ AIBL_fea <- my_featureAnno[my_featureAnno$ID%in%select_col,]
 save(AIBL_fea,file="~/zhutianshu/combined/BioM2/AIBL_fea.RData")
 
 
-#二. GSE156984 
-library(data.table)
-GSE156984_STG <- fread("~/zhutianshu/GSE156984/GSE156984_STG_Matrix_processed.txt.gz",sep="\t")
-GSE156984_STG <-GSE156984_STG%>%
-  select(!matches("_Detection_Pval"))
-GSE156984_STG1 <- GSE156984_STG%>%
-  column_to_rownames(var="V1")%>%
-  t()%>%
-  as.data.frame()
-#探针过滤
-zhou <- read.csv("~/zhutianshu/combined/zhou_2016.csv")
-std_names <- zhou$ID
-select_col <- setdiff(colnames(GSE156984_STG1),std_names)
-GSE156984_STG <- GSE156984_STG1[,select_col]
-save(GSE156984_STG,file="~/zhutianshu/GSE156984/GSE156984_STG.RData")
-#加label
-GSE156984_anno=read.csv("~/zhutianshu/GSE156984/GSE156984_anno.csv")
-GSE156984_STG <- GSE156984_STG%>%
-  rownames_to_column(var='sample')%>%
-  merge(GSE156984_anno[,c(4,6)],.,by='sample')%>%
-  column_to_rownames(var='sample')
-save(GSE156984_STG,file="~/zhutianshu/combined/BioM2/GSE156984_STG.RData")
-##########选择适合的注释文件
-my_featureAnno <- read.csv("~/zhutianshu/combined/zhou_featureAnno.csv")
-std_names <- my_featureAnno$ID
-select_col <- intersect(colnames(GSE156984_STG),std_names)
-GSE156984_STG_fea <- my_featureAnno[my_featureAnno$ID%in%select_col,]
-save(GSE156984_STG_fea,file="~/zhutianshu/combined/BioM2/GSE156984_STG_fea.RData")
 
-
-#三. GSE134379/GSE66531
+#二. GSE66531
 ##samplesheet
 GSE66531_anno <- read.csv("GSE66351_series_matrix.csv",header = F)
 GSE66531_anno <- t(GSE66531_anno)%>%
@@ -111,37 +79,11 @@ write.csv(GSE66531_anno2,"~/zhutianshu/GSE66531/GSE66531_samplesheet.csv",row.na
 GSE66531_samplesheet <- meffil::meffil.read.samplesheet("~/zhutianshu/GSE66531/")
 write.csv(GSE66531_samplesheet,"~/zhutianshu/GSE66531/GSE66531_samplesheet.csv")
 GSE66531_samplesheet <- read.csv("~/zhutianshu/GSE66531/GSE66531_samplesheet.csv")
-GSE134379_anno <- read.csv("GSE134379_series_matrix.csv",header = F)
-GSE134379_anno <- t(GSE134379_anno)%>%
-  as.data.frame()
-library(stringr)
-GSE134379_anno1 <- GSE134379_anno[2:nrow(GSE134379_anno),]
-colnames(GSE134379_anno1) <- c("Sample_Name","region","Sex","AGE","label")
-GSE134379_anno2 <- GSE134379_anno1%>%
-  dplyr::mutate(across(2,~sapply(strsplit(.x, " "), `[`, 3)))%>%
-  dplyr::mutate(across(c(3:5),~sapply(strsplit(.x, " "), `[`, 2)))%>%
-  dplyr::mutate(label=ifelse(label=="AD",1,0))
-shell-'ls > name.txt'
-name_file <- read.table("~/zhutianshu/GSE134379/name.txt")
-name_file <- head(name_file, -1)
-name_file2 <- name_file%>%
-  dplyr::mutate(Sample_Name=sapply(strsplit(V1, "_"), `[`, 1))%>%
-  dplyr::mutate(Array=sapply(strsplit(V1, "_"), `[`, 3))%>%
-  dplyr::mutate(Slide=sapply(strsplit(V1, "_"), `[`, 2))%>%
-  distinct(Sample_Name,.keep_all = T)
-GSE134379_anno3 <- merge(name_file2,GSE134379_anno2,by="Sample_Name")%>%
-  dplyr::select(-2)
-write.csv(GSE134379_anno3,"~/zhutianshu/GSE134379/GSE134379_samplesheet.csv",row.names = F)
-GSE134379_samplesheet <- meffil::meffil.read.samplesheet("~/zhutianshu/GSE134379/")
-write.csv(GSE134379_samplesheet,"~/zhutianshu/GSE134379/GSE134379_samplesheet.csv")
 #meffil处理原始数据
 library(meffil)
 options(mc.cores=40)
-GSE134379_samplesheet <-read.csv("~/zhutianshu/GSE134379/GSE134379_samplesheet.csv")
 GSE66531_samplesheet <-read.csv("~/zhutianshu/GSE66531/GSE66531_samplesheet.csv")
-qc.objects1 <- meffil.qc(GSE134379_samplesheet, cell.type.reference="guintivano dlpfc", verbose=TRUE)
-qc.objects2 <- meffil.qc(GSE66531_samplesheet, cell.type.reference="guintivano dlpfc", verbose=TRUE)
-qc.objects <- c(qc.objects1, qc.objects2)
+qc.objects <- meffil.qc(GSE66531_samplesheet, cell.type.reference="guintivano dlpfc", verbose=TRUE)
 save(qc.objects,file="brain_qc.objects.rda")
 qc.summary <- meffil.qc.summary(qc.objects)
 save(qc.summary,file="brain_qc.summary.rda")
@@ -175,18 +117,6 @@ library(softImpute)
 fita=softImpute(final_betas)
 final_betas <- complete(final_betas, fita)
 save(final_betas,file="~/zhutianshu/combined/BioM2/brain_beta.RData")
-######找出GSE134379中的数据
-library(dplyr)
-library(tibble)
-GSE134379_samplesheet <- read.csv("~/zhutianshu/GSE134379/GSE134379_samplesheet.csv")
-###middle temporal gyrus (MTG)
-name <- GSE134379_samplesheet[GSE134379_samplesheet$region=='MTG',]$Sample_Name
-MTG_beta<- final_betas[rownames(final_betas) %in% name, ]
-MTG_beta=as.data.frame(MTG_beta)%>%
-  rownames_to_column(var="Sample_Name")%>%
-  merge(GSE134379_samplesheet[,c(1,7)],.,by="Sample_Name")%>%
-  column_to_rownames(var="Sample_Name")
-save(MTG_beta,file="~/zhutianshu/combined/BioM2/MTG_beta.RData")
 ####找出GSE66531中的数据
 GSE66531_samplesheet <- read.csv("~/zhutianshu/GSE66531/GSE66531_samplesheet.csv")
 ###froCortex
@@ -213,9 +143,115 @@ Glia_beta=as.data.frame(Glia_beta)%>%
   merge(GSE66531_samplesheet[,c(1,4)],.,by="Sample_Name")%>%
   column_to_rownames(var="Sample_Name")
 save(Glia_beta,file="~/zhutianshu/combined/BioM2/Glia_beta.RData")
+#三. ADNI
+samplesheet <- read.csv("~/zhutianshu/ADNI/ADNI_meth/ADNI_Methylation_SampleAnnotation_20170530.csv")
+library(dplyr)
+library(ADNIMERGE)
+samplesheet_bl <- samplesheet%>%
+  group_by(RID)%>%
+  arrange(Edate)%>%
+  slice(1)%>%
+  ungroup()%>%
+  dplyr::select(-c(3,5,6))
+#添加非纵向临床信息
+clin <- adnimerge[,c(1,7,9:11,15)]
+samplesheet_AGE <- clin%>%
+  group_by(RID)%>%
+  arrange(EXAMDATE)%>%
+  slice(1)%>%
+  ungroup()%>%
+  merge(samplesheet_bl,.,by="RID")%>%
+  mutate(TimeInterval = floor(as.numeric(difftime(Edate, EXAMDATE, units = "days"))/365)) %>%
+  mutate(TimeInterval=ifelse(TimeInterval<0,0,TimeInterval))%>%
+  mutate(AGE=AGE+TimeInterval)%>%
+  dplyr::select(-c(6,11))
+#添加诊断
+samplesheet_clin <- adnimerge[,c(1,7,61)]%>%
+  filter(!is.na(DX))%>%
+  merge(samplesheet_AGE,.,by="RID")%>%
+  mutate(tm=abs(as.numeric(difftime(Edate,EXAMDATE, units = "days"))))%>%
+  group_by(RID)%>%
+  arrange(tm)%>%
+  slice(1)%>%
+  dplyr::select(-c(10,12))%>%
+  mutate(DX=as.numeric(factor(DX,
+                              levels=c("CN","MCI","Dementia"),
+                              labels=c(1,2,3))))%>%
+  dplyr::rename(Sex=PTGENDER)
 
+#修改为处理甲基化所需格式
+samplesheet_merffil <- samplesheet_clin%>%
+  mutate(Sex=ifelse(Sex=="Male","M","F"))%>%
+  dplyr::rename(Sample_Name=barcodes)
+samplesheet_path <- meffil.create.samplesheet("~/zhutianshu/ADNI/ADNI_meth/ADNI_iDAT_files/")
+ADNI_samplesheet <- samplesheet_path[,c(1,6)]%>%
+  merge(.,samplesheet_merffil,by="Sample_Name")%>%
+  dplyr::select(-1)%>%
+  dplyr::rename(Sample_Name=RID,label=DX)
+write.csv(ADNI_samplesheet,"~/zhutianshu/ADNI/ADNI_meth/ADNI_iDAT_files/ADNI_samplesheet.csv",row.names = F)
+#############################################################################################################
+#处理甲基化原始数据
+#/opt/R/4.3.1/lib/R/bin/R
+library(meffil)
+options(mc.cores=40)
+ADNI_samplesheet <- read.csv("ADNI_samplesheet.csv")
+qc.objects <- meffil.qc(ADNI_samplesheet, cell.type.reference="blood gse167998", verbose=TRUE)
+qc.summary <- meffil.qc.summary(qc.objects)
+meffil.qc.report(qc.summary, output.file="qc/report.html")#qc报告
+qc.objects <- meffil.remove.samples(qc.objects, qc.summary$bad.samples$sample.name)
+norm.objects <- meffil.normalize.quantiles(qc.objects, number.pcs=10)
+meffil.normalize.samples(
+  norm.objects,
+  just.beta=T,
+  remove.poor.signal=T,
+  cpglist.remove=qc.summary$bad.cpgs$name,
+  gds.filename="ADNI_beta.gds",
+  verbose=T)
+#过滤探针
+autosomal.sites <- meffil::meffil.get.autosomal.sites("epic")
+zhou <- read.csv("~/zhutianshu/combined/zhou_2016.csv")
+std_names <- zhou$ID
+filtered_sites <- setdiff(autosomal.sites, std_names)
+bad.sites <- qc.summary$bad.cpgs$name
+filtered_sites <- setdiff(filtered_sites, bad.sites)
+beta <- meffil.gds.methylation("ADNI_beta.gds",sites=filtered_sites)
+#先过滤缺失多的样本
+threshold <- 0.95
+max_na <- floor((1 - threshold) * nrow(beta))
+final_betas <- beta[, colSums(is.na(beta)) < max_na]
+#过滤缺失多的探针
+final_betas <- t(beta)
+max_na <- floor((1 - threshold) * nrow(final_betas))
+final_betas <- final_betas[, colSums(is.na(final_betas)) < max_na]
+####缺失值填充
+library(softImpute)
+fita=softImpute(final_betas)
+final_betas <- complete(final_betas, fita)
+save(final_betas,file="final_betas.rds")
+library(dplyr)
+library(tibble)
+MCI_beta<- final_betas[rownames(final_betas) %in% ADNI_samplesheet[ADNI_samplesheet$label==2,]$Sample_Name, ]
+MCI_beta=as.data.frame(MCI_beta)%>%
+  rownames_to_column(var="Sample_Name")%>%
+  merge(ADNI_samplesheet[,c(2,10)],.,by="Sample_Name")%>%
+  column_to_rownames(var="Sample_Name")
+save(MCI_beta,file="MCI_beta.rds")
+CNAD_beta<- final_betas[rownames(final_betas) %in% ADNI_samplesheet[ADNI_samplesheet$label!=2,]$Sample_Name, ]
+CNAD_beta=as.data.frame(CNAD_beta)%>%
+  rownames_to_column(var="Sample_Name")%>%
+  merge(ADNI_samplesheet[,c(2,10)],.,by="Sample_Name")%>%
+  column_to_rownames(var="Sample_Name")%>%
+  mutate(label=ifelse(label==1,1,2))
+save(CNAD_beta,file="CNAD_beta.rds")
+#nohup /opt/R/4.3.1/lib/R/bin/Rscript ADNI_meffi.R > output.log 2>&1 &
 
-#二、选出BP通路
+#找出对应位点注释文件
+my_featureAnno <- read.csv("~/zhutianshu/combined/zhou_featureAnno.csv")
+select_col <- intersect(colnames(final_betas),my_featureAnno$ID)
+ADNI_fea <- my_featureAnno[my_featureAnno$ID%in%select_col,]
+save(ADNI_fea,file="~/zhutianshu/ADNI/ADNI_PMS/ADNI_fea.RData")
+###################################################################################
+#四、选出BP通路
 xx <- as.list(GOTERM)
 go_terms <- data.frame(
   GO_ID = names(xx),
